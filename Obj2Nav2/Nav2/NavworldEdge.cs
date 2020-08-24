@@ -7,6 +7,7 @@ namespace Obj2Nav2.Nav2
         public ushort Index;
         public NavworldNode A;
         public NavworldNode B;
+        public ushort ChunkIndex;
 
         public ushort Weight;
 

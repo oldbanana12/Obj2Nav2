@@ -1,4 +1,5 @@
 ﻿using Obj2Nav2.Nav2;
+using Obj2Nav2.WavefrontObj;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -161,6 +162,82 @@ namespace Obj2Nav2
 
             writer.Write((ushort)0);
             writer.Write((ushort)0);
+        }
+
+        internal void LoadFromChunks(Obj[,] pieces, uint width_chunks, uint height_chunks)
+        {
+            var num_chunks = width_chunks * height_chunks;
+
+            ushort vertexOffset = 0;
+
+            for (int y = 0; y < height_chunks; y++)
+            {
+                for (int x = 0; x < width_chunks; x++)
+                {
+                    ushort vertexCount = 0;
+
+                    var obj = pieces[x, y];
+                    foreach (var vertex in obj.VertexList)
+                    {
+                        var position = new Vector3(vertex.X, vertex.Y, vertex.Z);
+                        Vertices.Add(new ScaledVertex(position, Nav2.Nav2.Origin, Nav2.Nav2.ScaleFactor));
+                    }
+
+                    foreach (var face in obj.FaceList)
+                    {
+                        var newFace = new NavmeshFace();
+                        newFace.VertexIndices = new int[face.VertexIndexList.Count];
+                        newFace.AdjacentFaces = new int[face.VertexIndexList.Count];
+                        newFace.VertexOffset = vertexOffset;
+
+                        for (int i = 0; i < face.VertexIndexList.Count; i++)
+                        {
+                            newFace.AdjacentFaces[i] = -1;
+                            newFace.VertexIndices[i] = face.VertexIndexList[i] - 1;
+                            vertexCount = (ushort)Math.Max(vertexCount, face.VertexIndexList[i]);
+                        }
+
+                        Faces.Add(newFace);
+                    }
+
+                    vertexOffset += vertexCount;
+                    Console.WriteLine(vertexOffset);
+                }
+            }
+
+            for (int i = 0; i < Faces.Count; i++)
+            {
+                for (int j = 0; j < Faces.Count; j++)
+                {
+                    if (i == j)
+                        continue;
+
+                    for (int a = 0; a < Faces[i].VertexIndices.Length; a++)
+                    {
+                        for (int b = 0; b < Faces[j].VertexIndices.Length; b++)
+                        {
+                            var A1 = Vertices[Faces[i].VertexIndices[a] + Faces[i].VertexOffset];
+                            ScaledVertex B1;
+                            if (a + 1 >= Faces[i].VertexIndices.Length)
+                                B1 = Vertices[Faces[i].VertexIndices[0] + Faces[i].VertexOffset];
+                            else
+                                B1 = Vertices[Faces[i].VertexIndices[a + 1] + Faces[i].VertexOffset];
+
+                            var A2 = Vertices[Faces[j].VertexIndices[b] + Faces[j].VertexOffset];
+                            ScaledVertex B2;
+                            if (b + 1 >= Faces[j].VertexIndices.Length)
+                                B2 = Vertices[Faces[j].VertexIndices[0] + Faces[j].VertexOffset];
+                            else
+                                B2 = Vertices[Faces[j].VertexIndices[b + 1] + Faces[j].VertexOffset];
+
+                            if ((A1.Equals(A2) && B1.Equals(B2)) || (A1.Equals(B2) && B1.Equals(A2))) {
+                                Faces[i].AdjacentFaces[a] = j;
+                                Faces[j].AdjacentFaces[b] = i;
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }

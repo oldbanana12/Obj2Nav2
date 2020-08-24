@@ -4,5 +4,7 @@
     {
         public int[] AdjacentFaces;
         public int[] VertexIndices;
+
+        public ushort VertexOffset;
     }
 }

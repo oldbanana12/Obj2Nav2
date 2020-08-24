@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Obj2Nav2.WavefrontObj;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,12 +15,12 @@ namespace Obj2Nav2.Nav2
         private const uint MANIFEST_ENTRY_SIZE = 12;
 
         public List<IEntry> Entries;
-        public Vector3 Origin;
+        public static Vector3 Origin;
 
         public NavSystem navSystem;
 
-        private Vector3 _size;
-        public Vector3 Size {
+        private static Vector3 _size;
+        public static Vector3 Size {
             get
             {
                 return _size;
@@ -36,7 +37,7 @@ namespace Obj2Nav2.Nav2
             } 
         }
 
-        public ScaledVertex ScaleFactor;
+        public static ScaledVertex ScaleFactor;
 
         public Nav2()
         {
@@ -119,6 +120,34 @@ namespace Obj2Nav2.Nav2
             writer.Write(0x46D9C1A9);
             writer.Write(0xA50A3838);
             writer.Write(0xB7A71CCD);
+        }
+
+        internal void LoadFromChunks(Obj[,] pieces, uint width_chunks, uint height_chunks)
+        {
+            NavworldEntry navworld = new NavworldEntry
+            {
+                GroupId = 4
+            };
+
+            navworld.LoadFromChunks(pieces, width_chunks, height_chunks);
+            Entries.Add(navworld);
+
+            NavmeshChunkEntry navmesh_chunk = new NavmeshChunkEntry
+            {
+                GroupId = 4
+            };
+
+            navmesh_chunk.LoadFromChunks(pieces, width_chunks, height_chunks);
+            Entries.Add(navmesh_chunk);
+
+            SegmentChunkEntry segment_chunk = new SegmentChunkEntry
+            {
+                GroupId = 4
+            };
+
+            segment_chunk.LoadFromChunks(pieces, width_chunks, height_chunks);
+
+            Entries.Add(segment_chunk);
         }
 
         private void writeManifest(BinaryWriter writer)

@@ -1,4 +1,5 @@
 ﻿using Obj2Nav2.Nav2;
+using Obj2Nav2.WavefrontObj;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,14 +10,22 @@ namespace Obj2Nav2
     {
         private const uint PAYLOAD_HEADER_SIZE = 16;
 
-        // FIXME: Hardcoded 1 entry for now 
-        private const uint ENTRY_COUNT = 1;
+        private uint entry_count;
 
         public byte GroupId;
 
-        public byte verts;
-        public byte faces;
-        public byte edges;
+        struct Chunk {
+            public ScaledVertex from;
+            public ScaledVertex to;
+
+            public byte verts;
+            public byte faces;
+            public byte edges;
+
+            public ushort first_face;
+        }
+
+        private Chunk[] chunks;
 
         public SegmentChunkEntry()
         {
@@ -56,14 +65,14 @@ namespace Obj2Nav2
 
         private uint getSubsection1Length()
         {
-            var subsection1Length = (uint)(ENTRY_COUNT * 12);
+            var subsection1Length = (uint)(entry_count * 12);
             subsection1Length += Utils.GetPaddingSize(subsection1Length);
             return subsection1Length;
         }
 
         private uint getSubsection2Length()
         {
-            var subsection2Length = (uint)(ENTRY_COUNT * 12);
+            var subsection2Length = (uint)(entry_count * 12);
             subsection2Length += Utils.GetPaddingSize(subsection2Length);
             return subsection2Length;
         }
@@ -92,31 +101,34 @@ namespace Obj2Nav2
         {
             writePayloadHeader(writer);
 
-            writer.Write((ushort)0);
-            writer.Write((ushort)0);
-            writer.Write((ushort)0);
+            foreach (var chunk in chunks)
+            {
+                chunk.from.Write(writer);
+                chunk.to.Write(writer);
+            }
 
-            writer.Write((ushort)ushort.MaxValue);
-            writer.Write((ushort)ushort.MaxValue);
-            writer.Write((ushort)ushort.MaxValue);
+            var padding = Utils.GetPaddingSize(entry_count * 12);
+            for (int i = 0; i < padding; i++)
+            {
+                writer.Write((byte)0);
+            }
 
-            // Padding
-            writer.Write((ushort)0);
-            writer.Write((ushort)0);
+            foreach (var chunk in chunks)
+            {
+                writer.Write((ushort)0);
+                writer.Write((ushort)chunk.first_face);
+                writer.Write((ushort)0);
+                writer.Write((ushort)0);
+                writer.Write((byte)chunk.verts);
+                writer.Write((byte)chunk.faces);
+                writer.Write((byte)(chunk.faces * 3));
+                writer.Write((byte)chunk.edges);
+            }
 
-            // Subsection 2
-            writer.Write((ushort)0);
-            writer.Write((ushort)0); 
-            writer.Write((ushort)0);
-            writer.Write((ushort)0);
-            writer.Write((byte)verts);
-            writer.Write((byte)faces);
-            writer.Write((byte)(faces * 3));
-            writer.Write((byte)edges);
-
-            // Padding
-            writer.Write((ushort)0);
-            writer.Write((ushort)0);
+            for (int i = 0; i < padding; i++)
+            {
+                writer.Write((byte)0);
+            }
         }
 
         private void writePayloadHeader(BinaryWriter writer)
@@ -125,8 +137,33 @@ namespace Obj2Nav2
             writer.Write(PAYLOAD_HEADER_SIZE + getSubsection1Length()); // Subsection 2 offset
             writer.Write(PAYLOAD_HEADER_SIZE + getSubsection1Length() + getSubsection2Length()); // Subsection 3 offset
 
-            // TODO: Actually support writing more than 1 entry
-            writer.Write((uint)ENTRY_COUNT);
+            writer.Write((uint)entry_count);
+        }
+
+        internal void LoadFromChunks(Obj[,] pieces, uint width_chunks, uint height_chunks)
+        {
+            entry_count = width_chunks * height_chunks;
+            chunks = new Chunk[entry_count];
+
+            ushort face_count = 0;
+            for (int j = 0; j < height_chunks; j++)
+            {
+                for (int i = 0; i < width_chunks; i++)
+                {
+                    var chunk_index = (j * width_chunks) + i;
+                    var from = new Vector3(pieces[i, j].Size.XMin, pieces[i, j].Size.YMin, pieces[i, j].Size.ZMin);
+                    var to = new Vector3(pieces[i, j].Size.XMax, pieces[i, j].Size.YMax, pieces[i, j].Size.ZMax);
+
+                    chunks[chunk_index].from = new ScaledVertex(from, Nav2.Nav2.Origin, Nav2.Nav2.ScaleFactor);
+                    chunks[chunk_index].to = new ScaledVertex(to, Nav2.Nav2.Origin, Nav2.Nav2.ScaleFactor);
+                    chunks[chunk_index].first_face = face_count;
+                    face_count += (ushort)pieces[i, j].FaceList.Count;
+
+                    chunks[chunk_index].faces = (byte)pieces[i, j].FaceList.Count;
+                    chunks[chunk_index].verts = (byte)pieces[i, j].VertexList.Count;
+                    // TODO: Calculate edge count
+                }
+            }
         }
     }
 }

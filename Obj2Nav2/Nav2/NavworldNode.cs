@@ -18,6 +18,7 @@ namespace Obj2Nav2.Nav2
 
         public ushort Index { get; internal set; }
         public ushort FaceIndex { get; internal set; }
+        public ushort ChunkIndex { get; internal set; }
 
         internal void WritePosition(BinaryWriter writer)
         {

@@ -174,6 +174,7 @@ namespace Obj2Nav2.WavefrontObj
                     }
 
                     pieces[i, j] = newPiece;
+                    pieces[i, j].updateSize();
                 }
             }
 

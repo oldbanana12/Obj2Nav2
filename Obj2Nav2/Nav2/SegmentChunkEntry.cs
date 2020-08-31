@@ -1,7 +1,6 @@
 ﻿using Obj2Nav2.Nav2;
 using Obj2Nav2.WavefrontObj;
 using System;
-using System.Collections.Generic;
 using System.IO;
 
 namespace Obj2Nav2
@@ -23,6 +22,8 @@ namespace Obj2Nav2
             public byte edges;
 
             public ushort first_face;
+
+            public ushort max_vert_index;
         }
 
         private Chunk[] chunks;
@@ -113,9 +114,10 @@ namespace Obj2Nav2
                 writer.Write((byte)0);
             }
 
+            ushort max_index = 0;
             foreach (var chunk in chunks)
             {
-                writer.Write((ushort)0);
+                writer.Write((ushort)max_index);
                 writer.Write((ushort)chunk.first_face);
                 writer.Write((ushort)0);
                 writer.Write((ushort)0);
@@ -123,6 +125,8 @@ namespace Obj2Nav2
                 writer.Write((byte)chunk.faces);
                 writer.Write((byte)(chunk.faces * 3));
                 writer.Write((byte)chunk.edges);
+
+                max_index += chunk.max_vert_index;
             }
 
             for (int i = 0; i < padding; i++)
@@ -154,6 +158,14 @@ namespace Obj2Nav2
                     var from = new Vector3(pieces[i, j].Size.XMin, pieces[i, j].Size.YMin, pieces[i, j].Size.ZMin);
                     var to = new Vector3(pieces[i, j].Size.XMax, pieces[i, j].Size.YMax, pieces[i, j].Size.ZMax);
 
+                    foreach (var face in pieces[i, j].FaceList)
+                    {
+                        foreach (var vertex in face.VertexIndexList)
+                        {
+                            chunks[chunk_index].max_vert_index = Math.Max((ushort)vertex, chunks[chunk_index].max_vert_index);
+                        }
+                    }
+
                     chunks[chunk_index].from = new ScaledVertex(from, Nav2.Nav2.Origin, Nav2.Nav2.ScaleFactor);
                     chunks[chunk_index].to = new ScaledVertex(to, Nav2.Nav2.Origin, Nav2.Nav2.ScaleFactor);
                     chunks[chunk_index].first_face = face_count;
@@ -161,7 +173,8 @@ namespace Obj2Nav2
 
                     chunks[chunk_index].faces = (byte)pieces[i, j].FaceList.Count;
                     chunks[chunk_index].verts = (byte)pieces[i, j].VertexList.Count;
-                    // TODO: Calculate edge count
+                    var edges = (pieces[i, j].FaceList.Count * 2) + 1;
+                    chunks[chunk_index].edges = (byte)edges;
                 }
             }
         }

@@ -1,6 +1,7 @@
 ﻿using Obj2Nav2.Nav2;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace Obj2Nav2
 {
@@ -96,6 +97,13 @@ namespace Obj2Nav2
 
             writer.Write((byte)0); // Unknown
             writer.Write((ushort)0); // Unknown
+        }
+
+        public ushort[] GetChunkIDs ()
+        {
+            ushort[] ids = new ushort[chunk_ids.Keys.Count];
+            chunk_ids.Keys.CopyTo(ids, 0);
+            return ids;
         }
 
         private void writePayload(BinaryWriter writer)

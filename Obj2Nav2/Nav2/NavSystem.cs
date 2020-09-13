@@ -10,9 +10,12 @@ namespace Obj2Nav2.Nav2
 
         private const uint HEADER_SIZE = 48;
         private const uint ENTRY_COUNT = 1;
+
+        public ushort[] ChunkIDs { get; internal set; }
+
         internal uint GetLength()
         {
-            return HEADER_SIZE;
+            return HEADER_SIZE + getSubsection1Length () + getSubsection2Length ();
         }
 
         internal void Write(BinaryWriter writer)
@@ -32,9 +35,17 @@ namespace Obj2Nav2.Nav2
             writer.Write((byte)4);
             writer.Write((byte)0);
             writer.Write((ushort)0);
-            writer.Write((uint)1);
-            writer.Write((ushort)0);
+            writer.Write((uint)ChunkIDs.Length);
+            foreach (var id in ChunkIDs)
+            {
+                writer.Write((ushort)id);
+            }
 
+            var padding = Utils.GetPaddingSize((uint)((ENTRY_COUNT * 8) + (ChunkIDs.Length * 2)));
+            for (int i = 0; i < padding; i++)
+            {
+                writer.Write((byte)0);
+            }
         }
 
         private void WriteHeader(BinaryWriter writer)
@@ -65,7 +76,7 @@ namespace Obj2Nav2.Nav2
 
         private uint getSubsection2Length()
         {
-            var subsection2Length = (uint)(ENTRY_COUNT * 10);
+            var subsection2Length = (uint)((ENTRY_COUNT * 8) + (ChunkIDs.Length * 2));
             subsection2Length += Utils.GetPaddingSize(subsection2Length);
             return subsection2Length;
         }

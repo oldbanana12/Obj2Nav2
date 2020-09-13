@@ -157,6 +157,11 @@ namespace Obj2Nav2.Nav2
             segment_graph.LoadFromNavworld(navworld, width_chunks, height_chunks);
 
             Entries.Add(segment_graph);
+
+            navSystem = new NavSystem();
+            navSystem.Origin = Origin;
+            navSystem.Size = Size;
+            navSystem.ChunkIDs = segment_graph.GetChunkIDs();
         }
 
         private void writeManifest(BinaryWriter writer)

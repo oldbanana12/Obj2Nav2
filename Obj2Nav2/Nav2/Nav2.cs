@@ -148,6 +148,15 @@ namespace Obj2Nav2.Nav2
             segment_chunk.LoadFromChunks(pieces, width_chunks, height_chunks);
 
             Entries.Add(segment_chunk);
+
+            SegmentGraphEntry segment_graph = new SegmentGraphEntry
+            {
+                GroupId = 4
+            };
+
+            segment_graph.LoadFromNavworld(navworld, width_chunks, height_chunks);
+
+            Entries.Add(segment_graph);
         }
 
         private void writeManifest(BinaryWriter writer)

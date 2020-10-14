@@ -71,6 +71,7 @@ namespace Obj2Nav2.Nav2
         public byte GroupId;
 
         public List<NavworldNode> Points;
+        public Dictionary<ushort, Extent> ChunkSizes;
         private List<NavworldEdge> edges;
 
         private uint num_chunks;
@@ -79,6 +80,7 @@ namespace Obj2Nav2.Nav2
         public NavworldEntry()
         {
             Points = new List<NavworldNode>();
+            ChunkSizes = new Dictionary<ushort, Extent>();
             edges = new List<NavworldEdge>();
         }
 
@@ -204,6 +206,7 @@ namespace Obj2Nav2.Nav2
                     edge_offsets[chunkIndex] = edgeIndex;
 
                     var obj = pieces[x, y];
+                    ChunkSizes.Add(chunkIndex, obj.Size);
                     var faces = new List<Face>();
                     var edges = new HashSet<GeometryEdge>();
 

@@ -29,6 +29,15 @@ namespace Obj2Nav2.Nav2
             writer.Write(Y);
             writer.Write(Z);
         }
+        public static ScaledVertex operator -(ScaledVertex lhs, ScaledVertex rhs)
+        {
+            return new ScaledVertex((ushort)Math.Abs(lhs.X - rhs.X), (ushort)Math.Abs(lhs.Y - rhs.Y), (ushort)Math.Abs(lhs.Z - rhs.Z));
+        }
+
+        public double Magnitude ()
+        {
+            return Math.Sqrt(Math.Pow(X, 2f) + Math.Pow(Y, 2f) + Math.Pow(Z, 2f));
+        }
 
         public override string ToString()
         {

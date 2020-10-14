@@ -1,7 +1,6 @@
 ﻿using Obj2Nav2.Nav2;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 
 namespace Obj2Nav2
 {
@@ -9,6 +8,7 @@ namespace Obj2Nav2
     {
         struct Chunk
         {
+            public ScaledVertex Center;
             public ScaledVertex Position;
             public HashSet<ushort> AdjacentChunks;
         }
@@ -145,8 +145,8 @@ namespace Obj2Nav2
             {
                 foreach (var adjacent in chunk.AdjacentChunks)
                 {
-                    // TODO: Calculate the actual weight
-                    writer.Write((ushort)100);
+                    var distance = (chunk.Position - chunk_ids[adjacent].Position).Magnitude () / 100;
+                    writer.Write((ushort)distance);
                     writer.Write((ushort)adjacent);
                     writer.Write((byte)0);
                     writer.Write((byte)0);
@@ -179,18 +179,42 @@ namespace Obj2Nav2
         {
             chunk_ids = new Dictionary<ushort, Chunk>();
 
-            // TODO: Get the most central point in a chunk
             foreach (var point in navworld.Points)
             {
                 if (!chunk_ids.ContainsKey(point.ChunkIndex))
                 {
                     var new_chunk = new Chunk
                     {
+                        Center = new ScaledVertex(
+                            new Vector3(
+                                navworld.ChunkSizes[point.ChunkIndex].XMax - (navworld.ChunkSizes[point.ChunkIndex].XSize / 2),
+                                navworld.ChunkSizes[point.ChunkIndex].YMax - (navworld.ChunkSizes[point.ChunkIndex].YSize / 2),
+                                navworld.ChunkSizes[point.ChunkIndex].ZMax - (navworld.ChunkSizes[point.ChunkIndex].ZSize / 2)
+                            ),
+                            Nav2.Nav2.Origin,
+                            Nav2.Nav2.ScaleFactor
+                        ),
                         Position = point.Position,
                         AdjacentChunks = new HashSet<ushort>()
                     };
 
                     chunk_ids.Add(point.ChunkIndex, new_chunk);
+                } 
+                else
+                {
+                    var orig_dist = (chunk_ids[point.ChunkIndex].Center - chunk_ids[point.ChunkIndex].Position).Magnitude();
+                    var new_dist = (point.Position - chunk_ids[point.ChunkIndex].Center).Magnitude();
+
+                    var orig_center = chunk_ids[point.ChunkIndex].Center;
+                    if (new_dist < orig_dist)
+                    {
+                        chunk_ids[point.ChunkIndex] = new Chunk
+                        {
+                            Center = orig_center,
+                            Position = point.Position,
+                            AdjacentChunks = new HashSet<ushort>()
+                        };
+                    }
                 }
             }
 

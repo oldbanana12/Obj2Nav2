@@ -134,9 +134,13 @@ namespace Obj2Nav2
                     writer.Write((byte)(vertexIndex));
                 }
 
-                for(int i = 0; i < 7; i++)
+                foreach (var edgeIndex in face.EdgeIndices)
                 {
-                    // TODO: There's 3-4 values here that actually mean something and should have a value
+                    writer.Write((byte)(edgeIndex));
+                }
+
+                for(int i = 0; i < (7 - face.EdgeIndices.Length); i++)
+                {
                     writer.Write((byte)0);
                 }
 
@@ -164,6 +168,20 @@ namespace Obj2Nav2
             writer.Write((ushort)0);
         }
 
+        private class NavworldEdge
+        {
+            public int index;
+            public ScaledVertex A;
+            public ScaledVertex B;
+
+            public override bool Equals(object obj)
+            {
+                return
+                    (A.Equals((obj as NavworldEdge).A) && B.Equals((obj as NavworldEdge).B)) ||
+                    (A.Equals((obj as NavworldEdge).B) && B.Equals((obj as NavworldEdge).A));
+            }
+        }
+
         internal void LoadFromChunks(Obj[,] pieces, uint width_chunks, uint height_chunks)
         {
             var num_chunks = width_chunks * height_chunks;
@@ -174,6 +192,9 @@ namespace Obj2Nav2
             {
                 for (int x = 0; x < width_chunks; x++)
                 {
+                    List<NavworldEdge> edges = new List<NavworldEdge>();
+                    int newEdgeIndex = 0;
+
                     ushort vertexCount = 0;
 
                     var obj = pieces[x, y];
@@ -188,12 +209,42 @@ namespace Obj2Nav2
                         var newFace = new NavmeshFace();
                         newFace.VertexIndices = new int[face.VertexIndexList.Count];
                         newFace.AdjacentFaces = new int[face.VertexIndexList.Count];
+                        newFace.EdgeIndices = new int[face.VertexIndexList.Count];
                         newFace.VertexOffset = vertexOffset;
 
                         for (int i = 0; i < face.VertexIndexList.Count; i++)
                         {
                             newFace.AdjacentFaces[i] = -1;
                             newFace.VertexIndices[i] = face.VertexIndexList[i] - 1;
+
+                            NavworldEdge edge;
+                            if (i + 1 >= face.VertexIndexList.Count)
+                            {
+                                edge = new NavworldEdge() { A = Vertices[vertexOffset + newFace.VertexIndices[i]], B = Vertices[vertexOffset + newFace.VertexIndices[0]] };
+                            } else
+                            {
+                                edge = new NavworldEdge() { A = Vertices[vertexOffset + newFace.VertexIndices[i]], B = Vertices[vertexOffset + face.VertexIndexList[i + 1] - 1] };
+                            }
+
+                            bool edgeFound = false;
+                            foreach (var existingEdge in edges)
+                            {
+                                if (edge.Equals(existingEdge))
+                                {
+                                    newFace.EdgeIndices[i] = existingEdge.index;
+                                    edgeFound = true;
+                                    break;
+                                }
+                            }
+
+                            if (!edgeFound)
+                            {
+                                edge.index = newEdgeIndex;
+                                newFace.EdgeIndices[i] = newEdgeIndex;
+                                edges.Add(edge);
+                                newEdgeIndex++;
+                            }
+
                             vertexCount = (ushort)Math.Max(vertexCount, face.VertexIndexList[i]);
                         }
 

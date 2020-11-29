@@ -6,5 +6,7 @@
         public int[] VertexIndices;
 
         public ushort VertexOffset;
+
+        public int[] EdgeIndices { get; internal set; }
     }
 }

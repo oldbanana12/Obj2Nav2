@@ -184,8 +184,8 @@ namespace Obj2Nav2.Nav2
                 writer.Write((uint)payloadOffset);
                 writer.Write((byte)entry.GetEntryType());
 
-                writer.Write((byte)0); // Unknown
-                writer.Write((ushort)0); // Unknown
+                writer.Write((ushort)entry.GetLength());
+                writer.Write((byte)0); // Probably padding
 
                 payloadOffset += entry.GetLength();
             }

@@ -23,7 +23,7 @@ namespace Obj2Nav2.Nav2
             WriteHeader(writer);
 
             // Subsection 1
-            writer.Write((uint)8);
+            writer.Write((uint)16);
             writer.Write((ushort)1);
             writer.Write((byte)0);
             writer.Write((byte)255);
@@ -60,8 +60,8 @@ namespace Obj2Nav2.Nav2
             writer.Write((uint)1);
             writer.Write((uint)1);
 
-            writer.Write((uint)10);
-            writer.Write((uint)(Size.X * 10));
+            writer.Write((uint)(Size.X));
+            writer.Write((uint)128);
 
             writer.Write(HEADER_SIZE);
             writer.Write(HEADER_SIZE + getSubsection1Length()); // Subsection 2 offset

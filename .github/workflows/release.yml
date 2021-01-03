@@ -1,0 +1,49 @@
+name: Publish Binaries
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create_release:
+    name: Create GitHub Release
+    runs-on: windows-2019    
+    steps:
+      - name: Install 7Zip PowerShell Module
+        shell: powershell
+        run: Install-Module 7Zip4PowerShell -Force -Verbose      
+        
+      - uses: actions/checkout@v2
+      
+      - name: Build Binary
+        shell: cmd
+        run: call .\Obj2Nav2\Build.cmd     
+        
+      - name: Build Artifact
+        shell: cmd
+        run: call .\Obj2Nav2\ArtifactBuild.cmd      
+        
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: |
+            Automated Release by GitHub Action CI
+          draft: false
+          prerelease: true      
+          
+      - name: Upload Release Asset (x64)
+        id: upload-release-asset-x64
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./Obj2Nav2/Obj2Nav2X64.ZIP
+          asset_name: Obj2Nav2X64.ZIP
+          asset_content_type: application/zip

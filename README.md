@@ -32,7 +32,7 @@ The following steps detail how to make an .obj file with Blender that is compati
 
 5. Using the same methodology to create and position the plane, spawn in a cube and position it so that it intersects the plane in an area you want to remove. Enemies will navigate on parts of the plane that exist, so obstacles need to be cutouts in the plane. See below for a screenshot of positioning a cube to cut out part of the outer boundary of the map:
 
-![step 5](screenshots/step5_screenshot.PNG)
+![step 5](screenshots/step5_screenshot.png)
 
 6. Select the plane again, either by left clicking it, or from the "Scene Collection" on the right hand side of the screen. Switch to the "Modifiers" tab (see screenshot):
 
@@ -60,7 +60,7 @@ The following steps detail how to make an .obj file with Blender that is compati
     - Apply modifiers
     - Triangulate faces.
 
-![step 10](screenshots/step10_screenshot.PNG)
+![step 10](screenshots/step10_screenshot.png)
 
 Once exported, run the resulting .obj file through Obj2Nav2 and add the resulting output.nav2 to your modded map and test. If things aren't working, you can always use https://github.com/oldbanana12/Nav2Parser to convert the .nav2 back to .obj and check that things haven't been messed up visually.
 

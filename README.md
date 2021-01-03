@@ -72,4 +72,4 @@ It takes a lot of trial and error to get a navmesh that works well. If enemies a
 
 If the enemies are spawning where they are supposed to but seem to be stuck playing the "frustrated" animation, make sure that there aren't any obstacles in your navmesh near to their spawn. They seem to need a relatively clear surrounding area at spawn.
 
-In the examples folder of this repository, I have added the .obj file built for this example along with a Snakebite .mgsv that correctly loads the resulting .nav2 into the Cuba level. Some of the textures are a bit messed up, but this is unrelated to the nav2.
+In the examples folder of this repository, I have added the .blend and .obj files built for this example along with a Snakebite .mgsv that correctly loads the resulting .nav2 into the Cuba level. Some of the textures are a bit messed up, but this is unrelated to the nav2.

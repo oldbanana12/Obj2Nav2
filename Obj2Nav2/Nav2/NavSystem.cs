@@ -22,7 +22,8 @@ namespace Obj2Nav2.Nav2
         {
             WriteHeader(writer);
 
-            writer.Write((uint)16);
+            // Subsection 1
+            writer.Write((uint)8);
             writer.Write((ushort)1);
             writer.Write((byte)0);
             writer.Write((byte)255);

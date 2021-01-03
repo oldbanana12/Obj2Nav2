@@ -60,7 +60,7 @@ namespace Obj2Nav2.Nav2
             writer.Write((uint)1);
             writer.Write((uint)1);
 
-            writer.Write((uint)(Size.X));
+            writer.Write((uint)(Math.Ceiling(Size.X)));
             writer.Write((uint)128);
 
             writer.Write(HEADER_SIZE);

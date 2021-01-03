@@ -29,9 +29,14 @@ namespace Obj2Nav2.Nav2
             set {
                 _size = value;
 
-                var xDivisor = Size.X == 0 ? (ushort)65535 : (ushort)(65535 / Size.X);
-                var yDivisor = Size.Y == 0 ? (ushort)65535 : (ushort)(65535 / Size.Y);
-                var zDivisor = Size.Z == 0 ? (ushort)65535 : (ushort)(65535 / Size.Z);
+                var xDivisor = (ushort)(65535 / Size.X);
+                var yDivisor = (ushort)(65535 / Size.Y);
+                var zDivisor = (ushort)(65535 / Size.Z);
+
+                if (yDivisor == 0)
+                {
+                    yDivisor = 1;
+                }
 
                 ScaleFactor = new ScaledVertex(xDivisor, yDivisor, zDivisor);
             } 

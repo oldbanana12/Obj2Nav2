@@ -252,7 +252,6 @@ namespace Obj2Nav2
                     }
 
                     vertexOffset += vertexCount;
-                    Console.WriteLine(vertexOffset);
                 }
             }
 

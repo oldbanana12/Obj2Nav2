@@ -40,7 +40,7 @@ The following steps detail how to make an .obj file with Blender that is compati
 
 7. Select "Add Modifier" and add a "Boolean" modifier. Ensure the operation is set to "Difference" and then use the eyedropper tool in the "Object" field to select the cube. You should see the shape of the plane's orange boundary change to indicate you have modified its shape. You can additionally hide this cube by clicking the "Eye" symbol next to it in the "Scene Collection" in the top right. See screenshot:
 
-![step 7](screenshots/step7_screenshot.PNG)
+![step 7](screenshots/step7_screenshot.png)
 
 8. Repeat this process of adding cubes and modifiers to areas that you don't want to be navigable. Start with a small area and only a few cubes at first so you can test that the navmesh is working at all.
 
